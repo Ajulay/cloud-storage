@@ -13,7 +13,7 @@ public class Controller {
     }
 
     public void btn2Click() {
-        textArea.appendText("Java\n");
+        textArea.appendText("Java2\n");
     }
 
 

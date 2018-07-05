@@ -11,6 +11,6 @@
     <TextArea editable="false" fx:id="textArea" VBox.vgrow="ALWAYS"/>
     <HBox>
         <Button text="Click me!" onAction="#btnClickMeAction"/>
-        <Button text="Button #2" onAction="#btn2Click"/>
+        <Button text="Java2" onAction="#btn2Click"/>
     </HBox>
 </VBox>
