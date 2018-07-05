@@ -12,6 +12,4 @@ public class TransmitClass implements Serializable {
         this.part = part;
     }
 
-
-
 }

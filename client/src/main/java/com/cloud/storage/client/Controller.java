@@ -15,4 +15,10 @@ public class Controller {
     public void btn2Click() {
         textArea.appendText("Java\n");
     }
+
+
+    public void transmit (String filename){
+
+
+    }
 }
