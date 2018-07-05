@@ -1,5 +1,4 @@
 package com.cloud.storage.common;
-
 import java.io.Serializable;
 
 public class TransmitClass implements Serializable {
