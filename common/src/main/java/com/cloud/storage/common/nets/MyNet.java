@@ -20,7 +20,7 @@ public class MyNet {
 
     public static synchronized Socket getSocketInstance() throws IOException {
 
-        if(socket == null){
+        if(socket == null || socket.isClosed()){
             socket = new Socket("localhost", 3456);
         }
 
