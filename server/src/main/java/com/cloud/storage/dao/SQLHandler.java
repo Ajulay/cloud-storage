@@ -1,4 +1,4 @@
-package com.cloud.storage.server.dao;
+package com.cloud.storage.dao;
 
 import java.sql.*;
 
@@ -17,7 +17,7 @@ public class SQLHandler {
 
     }
 
-public static void addClientData(String name, long hashpass ){
+public static void addClientData(String name, long hashpass ) throws SQLException {
     try {
         stmt = conn.prepareStatement("INSERT INTO storage.clients(nickname, hashpass) VALUES (?,?);");
         ((PreparedStatement) stmt).setString(1, name);
@@ -26,6 +26,7 @@ public static void addClientData(String name, long hashpass ){
 
     } catch (SQLException e) {
         e.printStackTrace();
+        throw e;
     }
     finally {
         try {
@@ -42,7 +43,7 @@ public static String getClient(String name, long hashpass){
         stmt = conn.createStatement();
        ResultSet rs = stmt.executeQuery("SELECT * FROM storage.clients WHERE nickname = '" + name + "' AND hashpass = " + hashpass + ";");
        if(rs.next()){
-       s = rs.getString(2) + " - " + rs.getLong(3);
+       s = rs.getString(2) + " " + rs.getLong(3);
        }
     } catch (SQLException e) {
         e.printStackTrace();

@@ -1,110 +1,73 @@
 package com.cloud.storage.server;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
+import com.cloud.storage.dao.SQLHandler;
+import com.cloud.storage.handlers.AuthHandler;
+import com.cloud.storage.handlers.RegHandler;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+
+import java.sql.SQLException;
+
 
 public class Server {
-   // private Vector<String> cl
-    ServerSocketChannel ssc;
-    ByteBuffer bb ;
-    Selector selector;
+
+   private static final int MAX_OBJ_SIZE = 1024 * 1024 * 100;
+   public static final String CLIENT_DIRS = "server/src/main/java/com/cloud/storage/clientdirs/";
+
+public void run(){
+
+    EventLoopGroup bossGroup = new NioEventLoopGroup();
+    EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+        try {
+    ServerBootstrap b = new ServerBootstrap();
+    ServerBootstrap serverBootstrap = b.group(bossGroup, workerGroup)
+            .channel(NioServerSocketChannel.class)
+            .handler(new LoggingHandler(LogLevel.INFO))
+            .childHandler(new ChannelInitializer() {
+                              @Override
+                              protected void initChannel(Channel ch){
+                                ch.pipeline().addLast(new ObjectDecoder(MAX_OBJ_SIZE, ClassResolvers.cacheDisabled(null)),
+                                                      new ObjectEncoder(),
+                                                      new AuthHandler());
+                              }
+
+
+                          }
+            )
+            .option(ChannelOption.SO_BACKLOG, 128)
+            .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+
+        ChannelFuture channelFuture = b.bind(3456).sync();
 
 
 
+        channelFuture.channel().closeFuture().sync();
 
-    public Server() {
-
-        {
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    finally {
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
             try {
-                ssc = ServerSocketChannel.open();
-                ssc.socket().bind(new InetSocketAddress(3456));
-                bb = ByteBuffer.allocate(60);
-                ssc.configureBlocking(false);
-                selector = Selector.open();
-
-                ssc.register(selector, SelectionKey.OP_ACCEPT);
-
-            } catch (IOException e) {
+                SQLHandler.disconnect();
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
 
-
-
-       /*  try {
-             ServerSocket serverSocket = new ServerSocket(3456);
-             while (true) {
-                 Socket sc = serverSocket.accept();
-                new ClientHandler(this, sc);
-             }
-
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-     */
-    }
-
-     public void start(){
-
-         try {
-             Iterator<SelectionKey> it;
-             SelectionKey sk;
-             while (ssc.isOpen()){
-                // SocketChannel sc = ssc.accept();
-                 selector.select();
-                  it = selector.selectedKeys().iterator();
-                 // it.remove();
-                while (it.hasNext()){
-                   sk = it.next();
-                   // System.out.println(1);
-                   it.remove();
-                    if (sk.isAcceptable()) accept(sk);
-                    if (sk.isReadable()) transmit(sk);
-
-                }
+}
 
 
 
-             }
-
-
-
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-
-
-     }
-
-     public void accept(SelectionKey sk){
-         try {
-             SocketChannel sc = ((ServerSocketChannel)sk.channel()).accept();
-             String address = (new StringBuilder(sc.socket().getInetAddress().toString())).append(":").append(sc.socket().getPort()).toString();
-             sc.configureBlocking(false);
-             sc.register(selector, SelectionKey.OP_READ, address);
-            // sc.register(selector, SelectionKey.OP_READ);
-             bb.put("Hello!!!".getBytes());
-             bb.flip();
-             sc.write(bb);
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-         System.out.println("Accept");
-     }
-
-     public void transmit(SelectionKey sk){
-         System.out.println("Read");
-         SocketChannel ch = (SocketChannel) sk.channel();
-         try {
-             ch.close();
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-     }
 }
