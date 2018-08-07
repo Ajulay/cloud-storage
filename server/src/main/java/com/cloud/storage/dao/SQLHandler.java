@@ -11,10 +11,6 @@ public class SQLHandler {
     public static void connect() throws ClassNotFoundException, SQLException {
         Class.forName(DRIVER_NAME);
         conn = DriverManager.getConnection(URL, "root", "Ajulay");
-       // stmt = conn.createStatement();
-       // System.out.println("connect ok");
-      //  disconnect();
-
     }
 
 public static void addClientData(String name, long hashpass ) throws SQLException {
@@ -50,14 +46,6 @@ public static String getClient(String name, long hashpass){
     }
     return s;
 }
-
-
-
-
-
-
-
-
 
     public static void disconnect() throws SQLException {
         stmt.close();
